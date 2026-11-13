@@ -9,10 +9,13 @@
 
 use std::collections::{HashMap, HashSet};
 
+use delta_kernel_derive::internal_api;
+
 use super::{ColumnMetadataKey, ColumnName, DataType, MetadataValue, StructField, StructType};
 use crate::expressions::joined_column_name;
 
 /// Represents the difference between two schemas
+#[internal_api]
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct SchemaDiff {
     /// Fields that were added in the new schema
@@ -26,6 +29,7 @@ pub(crate) struct SchemaDiff {
 }
 
 /// Represents a field change (added or removed) at any nesting level
+#[internal_api]
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct FieldChange {
     /// The field that was added or removed
@@ -35,6 +39,7 @@ pub(crate) struct FieldChange {
 }
 
 /// Represents an update to a field between two schema versions
+#[internal_api]
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct FieldUpdate {
     /// The field as it existed in the original schema
@@ -48,6 +53,7 @@ pub(crate) struct FieldUpdate {
 }
 
 /// The types of changes that can occur to a field
+#[internal_api]
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum FieldChangeType {
     /// Field was renamed (logical name changed, but field ID stayed the same)
@@ -67,6 +73,7 @@ pub(crate) enum FieldChangeType {
 }
 
 /// Errors that can occur during schema diffing
+#[internal_api]
 #[derive(Debug, thiserror::Error)]
 pub(crate) enum SchemaDiffError {
     #[error("Schema diffing is not yet implemented")]
@@ -94,11 +101,13 @@ pub(crate) enum SchemaDiffError {
 
 impl SchemaDiff {
     /// Compute the difference between two schemas using field IDs
+    #[internal_api]
     pub(crate) fn new(before: &StructType, after: &StructType) -> Result<Self, SchemaDiffError> {
         compute_schema_diff(before, after)
     }
 
     /// Returns true if there are no differences between the schemas
+    #[internal_api]
     pub(crate) fn is_empty(&self) -> bool {
         self.added_fields.is_empty()
             && self.removed_fields.is_empty()
@@ -106,17 +115,20 @@ impl SchemaDiff {
     }
 
     /// Returns the total number of changes
+    #[internal_api]
     pub(crate) fn change_count(&self) -> usize {
         self.added_fields.len() + self.removed_fields.len() + self.updated_fields.len()
     }
 
     /// Returns true if there are any breaking changes (removed fields, type changes, or tightened
     /// nullability)
+    #[internal_api]
     pub(crate) fn has_breaking_changes(&self) -> bool {
         self.breaking_changes
     }
 
     /// Get all changes (both top-level and nested)
+    #[internal_api]
     pub(crate) fn all_changes(&self) -> (&[FieldChange], &[FieldChange], &[FieldUpdate]) {
         (
             &self.added_fields,
@@ -126,6 +138,7 @@ impl SchemaDiff {
     }
 
     /// Get all changes at the top level only (fields with path length of 1)
+    #[internal_api]
     pub(crate) fn top_level_changes(
         &self,
     ) -> (Vec<&FieldChange>, Vec<&FieldChange>, Vec<&FieldUpdate>) {
@@ -148,6 +161,7 @@ impl SchemaDiff {
     }
 
     /// Get all changes at nested levels only (fields with path length > 1)
+    #[internal_api]
     pub(crate) fn nested_changes(
         &self,
     ) -> (Vec<&FieldChange>, Vec<&FieldChange>, Vec<&FieldUpdate>) {
@@ -167,6 +181,46 @@ impl SchemaDiff {
             .filter(|f| f.path.path().len() > 1)
             .collect();
         (added, removed, updated)
+    }
+}
+
+impl FieldChange {
+    /// The field that was added or removed
+    #[internal_api]
+    pub(crate) fn field(&self) -> &StructField {
+        &self.field
+    }
+
+    /// The path to this field
+    #[internal_api]
+    pub(crate) fn path(&self) -> &ColumnName {
+        &self.path
+    }
+}
+
+impl FieldUpdate {
+    /// The field as it existed in the original schema
+    #[internal_api]
+    pub(crate) fn before(&self) -> &StructField {
+        &self.before
+    }
+
+    /// The field as it exists in the new schema
+    #[internal_api]
+    pub(crate) fn after(&self) -> &StructField {
+        &self.after
+    }
+
+    /// The path to this field in the new schema
+    #[internal_api]
+    pub(crate) fn path(&self) -> &ColumnName {
+        &self.path
+    }
+
+    /// The types of changes that occurred
+    #[internal_api]
+    pub(crate) fn change_types(&self) -> &[FieldChangeType] {
+        &self.change_types
     }
 }
 
