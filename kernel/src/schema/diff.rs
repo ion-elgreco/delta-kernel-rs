@@ -33,9 +33,9 @@ pub(crate) struct SchemaDiff {
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct FieldChange {
     /// The field that was added or removed
-    pub(crate) field: StructField,
+    pub field: StructField,
     /// The path to this field (e.g., column_name!("user.address.street"))
-    pub(crate) path: ColumnName,
+    pub path: ColumnName,
 }
 
 /// Represents an update to a field between two schema versions
@@ -43,13 +43,13 @@ pub(crate) struct FieldChange {
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct FieldUpdate {
     /// The field as it existed in the original schema
-    pub(crate) before: StructField,
+    pub before: StructField,
     /// The field as it exists in the new schema
-    pub(crate) after: StructField,
+    pub after: StructField,
     /// The path to this field (e.g., column_name!("user.address.street"))
-    pub(crate) path: ColumnName,
+    pub path: ColumnName,
     /// The types of changes that occurred (can be multiple, e.g. renamed + nullability changed)
-    pub(crate) change_types: Vec<FieldChangeType>,
+    pub change_types: Vec<FieldChangeType>,
 }
 
 /// The types of changes that can occur to a field
@@ -181,46 +181,6 @@ impl SchemaDiff {
             .filter(|f| f.path.path().len() > 1)
             .collect();
         (added, removed, updated)
-    }
-}
-
-impl FieldChange {
-    /// The field that was added or removed
-    #[internal_api]
-    pub(crate) fn field(&self) -> &StructField {
-        &self.field
-    }
-
-    /// The path to this field
-    #[internal_api]
-    pub(crate) fn path(&self) -> &ColumnName {
-        &self.path
-    }
-}
-
-impl FieldUpdate {
-    /// The field as it existed in the original schema
-    #[internal_api]
-    pub(crate) fn before(&self) -> &StructField {
-        &self.before
-    }
-
-    /// The field as it exists in the new schema
-    #[internal_api]
-    pub(crate) fn after(&self) -> &StructField {
-        &self.after
-    }
-
-    /// The path to this field in the new schema
-    #[internal_api]
-    pub(crate) fn path(&self) -> &ColumnName {
-        &self.path
-    }
-
-    /// The types of changes that occurred
-    #[internal_api]
-    pub(crate) fn change_types(&self) -> &[FieldChangeType] {
-        &self.change_types
     }
 }
 
